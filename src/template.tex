@@ -6,7 +6,7 @@
 %  Всё, что выше строки «НАЧАЛО КОНТЕНТА», — общая преамбула: не менять
 %  от главы к главе, чтобы методичка собиралась без правок.
 % =====================================================================
-\documentclass[11pt,a4paper]{report}
+\documentclass[12pt,a4paper]{report}
 
 % ---------- Шрифты и язык ----------
 \usepackage{fontspec}
@@ -70,7 +70,7 @@
 
 % ---------- Блоки: единый счётчик внутри главы ----------
 \tcbset{
-  lalgbox/.style={enhanced,breakable,sharp corners=south,arc=2mm,boxrule=0.6pt,
+  lalgbox/.style={enhanced,sharp corners=south,arc=2mm,boxrule=0.6pt,
     left=3mm,right=3mm,top=1.5mm,bottom=1.5mm,
     fonttitle=\sffamily\bfseries,separator sign={.},description delimiters={(}{)}},
 }
@@ -84,22 +84,22 @@
   {lalgbox,colback=cThmBg,colframe=cThm!60,coltitle=white,fontupper=\itshape}{cor}
 
 % Задача, с которой начинается тема: «есть проблема — чего не хватает?»
-\newtcolorbox{problem}[1][]{enhanced,breakable,colback=cPhysBg,colframe=cPhys,
+\newtcolorbox{problem}[1][]{enhanced,colback=cPhysBg,colframe=cPhys,
   boxrule=0pt,leftrule=3pt,sharp corners,left=3mm,
   title={\sffamily\bfseries Задача, с которой всё начинается#1},
   coltitle=cPhys!80!black,attach title to upper,after title={\par\smallskip}}
 % Физическое приложение
-\newtcolorbox{physics}[1]{enhanced,breakable,colback=cPhysBg,colframe=cPhys,
+\newtcolorbox{physics}[1]{enhanced,colback=cPhysBg,colframe=cPhys,
   boxrule=0.6pt,arc=2mm,fonttitle=\sffamily\bfseries,coltitle=white,
   title={Физика: #1}}
 % Ловушка — тонкое место, на котором ловят на экзамене
-\newtcolorbox{trap}{enhanced,breakable,colback=cTrap!5,colframe=cTrap,
+\newtcolorbox{trap}{enhanced,colback=cTrap!5,colframe=cTrap,
   boxrule=0pt,leftrule=3pt,sharp corners,left=3mm,
   title={\sffamily\bfseries Осторожно},coltitle=cTrap,attach title to upper,
   after title={\enspace}}
 % Вопрос, который возникает у студента по ходу чтения, — с ответом.
 % Сюда идут реальные вопросы и ошибки, возникшие при разборе темы.
-\newtcolorbox{studentq}[1]{enhanced,breakable,colback=cEigen!5,colframe=cEigen,
+\newtcolorbox{studentq}[1]{enhanced,colback=cEigen!5,colframe=cEigen,
   boxrule=0pt,leftrule=3pt,sharp corners,left=3mm,
   title={\sffamily\bfseries Вопрос: #1},coltitle=cEigen!70!black,attach title to upper,
   after title={\par\smallskip}}
@@ -109,9 +109,27 @@
   title={\sffamily\bfseries Что у нас есть и чего не хватает},
   coltitle=black,attach title to upper,after title={\par\smallskip}}
 
-% Доказательство — встроено в текст, без пометок «уровня»
-\renewenvironment{proof}[1][Доказательство]{\par\smallskip\noindent
-  \textsf{\bfseries\color{cThm}#1.}\ \ignorespaces}{\hfill$\blacksquare$\par\smallskip}
+% ---------- Вёрстка без «висячих» строк ----------
+% Ни одна строка абзаца не остаётся одна внизу или вверху страницы;
+% страницы не растягиваются, если блок переехал на следующую.
+\clubpenalty=10000 \widowpenalty=10000 \displaywidowpenalty=10000
+\raggedbottom
+% Цветные блоки (определения, теоремы, «Физика» и т. д.) не разрываются
+% между страницами: они короткие, и разрыв мешает чтению.
+
+% Доказательство — встроено в текст. Если доказательство помещается на странице,
+% оно целиком переносится на новую страницу, когда на текущей не хватает места;
+% разрывается только доказательство длиннее страницы.
+\usepackage{environ,needspace}
+\RenewEnviron{proof}[1][Доказательство]{%
+  \par\smallskip
+  \setbox0=\vbox{\hsize=\linewidth\noindent
+    \textsf{\bfseries\color{cThm}#1.}\ \BODY\hfill$\blacksquare$}%
+  \dimen0=\dimexpr\ht0+\dp0\relax
+  \ifdim\dimen0<\dimexpr\textheight-2\baselineskip\relax
+    \Needspace*{\dimen0}%
+  \fi
+  \noindent\textsf{\bfseries\color{cThm}#1.}\ \BODY\hfill$\blacksquare$\par\smallskip}
 
 % Раскадровка анимации: кадры в ряд + QR на живую анимацию
 %   \begin{frames}{подпись}{URL анимации} ... \frameitem{...} ... \end{frames}
